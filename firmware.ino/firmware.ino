@@ -16,12 +16,25 @@ WebServer server(80);
 
 #include "secrets.h"
 
+//Static IP address configuration
+// Thanks to https://circuits4you.com/2018/03/09/esp8266-static-ip-address-arduino-example/
+// IPAddress staticIP(192, 168, 43, 90); //ESP static ip
+// IPAddress gateway(192, 168, 43, 1);   //IP Address of your WiFi Router (Gateway)
+// IPAddress subnet(255, 255, 255, 0);  //Subnet mask
+// IPAddress dns(8, 8, 8, 8);  //DNS
+
 char passcode[64] = "";
-int pin;
+int pin = 16;
 int timeout = 150;
 
 void setup() {
   Serial.begin(115200);
+
+    Serial.println("Setting pin ");
+    Serial.println(pin);
+    Serial.println("LOW");
+    pinMode(pin, OUTPUT);
+    digitalWrite(pin, LOW);
 
   WiFi.begin(ssid, wifiPassword);
   while (WiFi.status() != WL_CONNECTED) {
@@ -72,9 +85,14 @@ void handleRoot() {
 
     if (strcmp(passcode, secretPasscode) == 0) {
       content += "Access granted.";
+      content += "Setting pin ";
+      content += String(pin);
+      content += " to HIGH for ";
+      content += String(timeout);
+      content += " milliseconds";
+
       server.send(200, "text/html", content);
 
-      pinMode(pin, OUTPUT);
       digitalWrite(pin, HIGH);
       delay(timeout);
       digitalWrite(pin, LOW);
